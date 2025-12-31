@@ -1,0 +1,2360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carga Masiva - Hacienda</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="alerts.js" defer></script>
+    <style>
+        /* Estilos específicos para la página de carga */
+        
+        /* Pestañas principales */
+        .main-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            background: white;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .main-tab {
+            flex: 1;
+            padding: 0.85rem 1.25rem;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .main-tab:hover:not(.active) {
+            background: #e2e8f0;
+            color: #1e3a8a;
+        }
+
+        .main-tab.active {
+            background: #3366cc;
+            color: white;
+            box-shadow: 0 2px 8px rgba(51, 102, 204, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Tabla de registros */
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+            text-decoration: line-through;
+        }
+
+        .registro-inactivo {
+            opacity: 0.6;
+            background: #fef2f2 !important;
+        }
+
+        .registro-inactivo:hover {
+            background: #fee2e2 !important;
+        }
+
+        /* Acciones de tabla */
+        .action-icon-btn {
+            padding: 0.4rem;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .action-icon-btn:hover {
+            background: #f1f5f9;
+        }
+
+        .action-icon-btn.delete:hover {
+            background: #fee2e2;
+            border-color: #dc2626;
+        }
+
+        .action-icon-btn.restore:hover {
+            background: #d1fae5;
+            border-color: #28a745;
+        }
+
+        /* Estilos de auditoría */
+        .accion-tag {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .accion-upload { background: #dbeafe; color: #1e40af; }
+        .accion-proceso { background: #d1fae5; color: #065f46; }
+        .accion-error { background: #fee2e2; color: #991b1b; }
+        .accion-borrar { background: #fef3c7; color: #92400e; }
+        .accion-restaurar { background: #e0e7ff; color: #4f46e5; }
+
+        /* Estilos para gestión de usuarios */
+        .admin-only {
+            display: none;
+        }
+
+        .admin-only.show {
+            display: block;
+        }
+
+        .admin-only.active {
+            display: block;
+        }
+
+        .rol-tag {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .rol-admin_general { background: #dc2626; color: white; }
+        .rol-admin_dependencia { background: #ea580c; color: white; }
+        .rol-operador { background: #2563eb; color: white; }
+        .rol-consulta { background: #64748b; color: white; }
+
+        .permiso-tag {
+            display: inline-block;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.2rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        .permiso-si { background: #d1fae5; color: #065f46; }
+        .permiso-no { background: #fee2e2; color: #991b1b; }
+
+        /* Modal para crear/editar usuario */
+        .user-modal {
+            max-width: 550px;
+        }
+
+        .user-form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .user-form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-form-group label .required {
+            color: #dc2626;
+            margin-left: 0.25rem;
+        }
+
+        .user-input {
+            width: 100%;
+            padding: 0.7rem 0.85rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .user-input:focus {
+            outline: none;
+            border-color: #3366cc;
+            box-shadow: 0 0 0 3px rgba(51, 102, 204, 0.15);
+        }
+
+        .user-input:disabled {
+            background: #f1f5f9;
+            cursor: not-allowed;
+        }
+
+        .user-select {
+            width: 100%;
+            padding: 0.7rem 0.85rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.9rem;
+            background: white;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .user-select:focus {
+            outline: none;
+            border-color: #3366cc;
+            box-shadow: 0 0 0 3px rgba(51, 102, 204, 0.15);
+        }
+
+        .user-checkbox {
+            width: 1.1rem;
+            height: 1.1rem;
+            margin-right: 0.5rem;
+            accent-color: #3366cc;
+            cursor: pointer;
+        }
+
+        .user-checkbox-label {
+            font-size: 0.9rem;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 0.5rem;
+            background: #f8fafc;
+            border-radius: 0.375rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .user-checkbox-label:hover {
+            background: #eff6ff;
+            border-color: #3366cc;
+        }
+
+        .user-form-row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .user-form-row .user-form-group {
+            flex: 1;
+        }
+
+        .user-form-section {
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .user-form-section-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            letter-spacing: 0.05em;
+        }
+
+        .area-select-group {
+            display: none;
+        }
+
+        .area-select-group.visible {
+            display: block;
+        }
+
+        .resultado-exito { color: #28a745; font-weight: 600; }
+        .resultado-error { color: #dc2626; font-weight: 600; }
+        .resultado-parcial { color: #d97706; font-weight: 600; }
+
+        .upload-container {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e3a8a;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: #f8fafc;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #3366cc;
+            background: #eff6ff;
+        }
+
+        .upload-zone-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .upload-zone-title { font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.25rem; }
+        .upload-zone-subtitle { color: #64748b; font-size: 0.85rem; }
+
+        .file-input { display: none; }
+
+        /* Lista de archivos pendientes */
+        .pending-files-container {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pending-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pending-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.375rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-primary {
+            background: #3366cc;
+            color: white;
+        }
+        .btn-primary:hover { background: #2855b3; }
+        .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover { background: #218838; }
+        .btn-success:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        .btn-secondary:hover { background: #4b5563; }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+        .btn-danger:hover { background: #b91c1c; }
+
+        .btn-outline {
+            background: white;
+            color: #3366cc;
+            border: 1px solid #3366cc;
+        }
+        .btn-outline:hover { background: #eff6ff; }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+        }
+
+        /* Tabla de archivos */
+        .files-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .files-table th {
+            background: #f1f5f9;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #475569;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .files-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+            vertical-align: middle;
+            background: white;
+        }
+
+        .files-table tbody tr:hover td { 
+            background: #f8fafc; 
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #1e3a8a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .file-date {
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+
+        /* Estados */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-ready {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-missing {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-processing {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        /* Checkbox */
+        .checkbox-cell {
+            width: 40px;
+        }
+
+        .file-checkbox {
+            width: 1.1rem;
+            height: 1.1rem;
+            accent-color: #3366cc;
+            cursor: pointer;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Progress */
+        .progress-container {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .progress-container.active { display: block; }
+
+        .progress-bar-wrapper {
+            background: #e2e8f0;
+            border-radius: 9999px;
+            height: 1.25rem;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3366cc, #1e3a8a);
+            border-radius: 9999px;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 0.375rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        /* Info box */
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #3366cc;
+            padding: 1rem 1.25rem;
+            border-radius: 0 0.375rem 0.375rem 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-box-title {
+            font-weight: 600;
+            color: #1e3a8a;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-box-content {
+            font-size: 0.85rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .info-box-content ul {
+            margin: 0.5rem 0 0 1.25rem;
+            padding: 0;
+        }
+
+        /* Directorio de trabajo */
+        .work-dir-info {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.85rem;
+            color: #166534;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .work-dir-path {
+            font-family: monospace;
+            background: rgba(0,0,0,0.05);
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        /* Refresh button */
+        .refresh-btn {
+            background: none;
+            border: 1px solid #cbd5e1;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .refresh-btn:hover {
+            background: #f1f5f9;
+            border-color: #3366cc;
+        }
+
+        /* Usuario logueado - mismo estilo que navbar-link */
+        .navbar-user-name {
+            cursor: default;
+            opacity: 0.85;
+        }
+    </style>
+</head>
+<body class="bg-gradient">
+    <!-- Barra de Navegación Superior - Estilo Institucional -->
+    <nav class="main-navbar">
+        <div class="navbar-gov-strip"></div>
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <div class="navbar-logo">🏛️</div>
+                <div class="navbar-title-group">
+                    <span class="navbar-title">DEPARTAMENTO DE HACIENDA</span>
+                    <span class="navbar-subtitle">Alcaldía de Santiago de Cali</span>
+                </div>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="index.html" class="navbar-link">Consultas</a></li>
+                <li><a href="carga.html" class="navbar-link active">Carga Masiva</a></li>
+                <li><span class="navbar-link navbar-user-name">👤 <span id="userName">Usuario</span></span></li>
+                <li><a href="#" class="navbar-link" onclick="cerrarSesion()">Salir</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto p-4 sm:p-6">
+
+        <header class="header-container">
+            <h1 class="header-title">📤 Carga Masiva de Datos</h1>
+            <p class="header-subtitle">
+                Sistema de procesamiento de actos administrativos
+            </p>
+        </header>
+
+        <!-- Info del flujo de trabajo -->
+        <div class="info-box">
+            <div class="info-box-title">📋 Flujo de trabajo</div>
+            <div class="info-box-content">
+                <ul>
+                    <li><strong>Paso 1:</strong> Suba la plantilla Excel con los datos</li>
+                    <li><strong>Paso 2:</strong> Suba los PDFs de <strong>cada registro</strong> vía FTP al directorio de trabajo</li>
+                    <li><strong>Paso 3:</strong> Cada PDF debe nombrarse igual que el <strong>No. Acto Administrativo</strong></li>
+                    <li><strong>Paso 4:</strong> Cuando todos los PDFs estén disponibles, procese el archivo</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Información del usuario y organismo -->
+        <div class="work-dir-info" style="margin-bottom: 0.5rem; background: #eff6ff; border-color: #bfdbfe;">
+            🏛️ <strong>Organismo:</strong> <span id="userOrganismo">-</span>
+            &nbsp;|&nbsp; 📂 <strong>Área:</strong> <span id="userArea">-</span>
+        </div>
+
+        <!-- Directorio de trabajo -->
+        <div class="work-dir-info">
+            📁 Tu directorio de PDFs: <span class="work-dir-path" id="userPdfPath">/uploads/[usuario]/pdfs/</span>
+            &nbsp;|&nbsp; Formato: <span class="work-dir-path">[Nombre_PDF].pdf</span> según columna "Nombre_PDF" del Excel
+        </div>
+
+        <!-- PESTAÑAS PRINCIPALES -->
+        <div class="main-tabs">
+            <button class="main-tab active" data-tab="carga" onclick="cambiarPestana('carga')">
+                📤 Carga de Archivos
+            </button>
+            <button class="main-tab" data-tab="registros" onclick="cambiarPestana('registros')">
+                📋 Mis Registros
+            </button>
+            <button class="main-tab" data-tab="auditoria" onclick="cambiarPestana('auditoria')">
+                📝 Auditoría
+            </button>
+            <button class="main-tab admin-only" data-tab="usuarios" onclick="cambiarPestana('usuarios')" id="tab-usuarios" style="display: none;">
+                👥 Gestión de Usuarios
+            </button>
+        </div>
+
+        <!-- ============== SECCIÓN: CARGA DE ARCHIVOS ============== -->
+        <div class="tab-content active" id="tab-carga">
+
+        <!-- Zona de carga de Excel -->
+        <div class="upload-container">
+            <div class="section-title">📄 Subir Plantilla Excel</div>
+            
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-zone-icon">📊</div>
+                <div class="upload-zone-title">Arrastra tu archivo Excel aquí o haz clic para seleccionar</div>
+                <div class="upload-zone-subtitle">Formatos permitidos: .xlsx, .xls, .csv (máx. 50MB)</div>
+            </div>
+            
+            <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls,.csv" multiple>
+        </div>
+
+        <!-- Lista de archivos pendientes -->
+        <div class="pending-files-container">
+            <div class="pending-header">
+                <div class="section-title" style="margin-bottom: 0;">
+                    📋 Archivos Pendientes de Procesar
+                    <button class="refresh-btn" onclick="cargarArchivosPendientes()" title="Actualizar lista">🔄</button>
+                </div>
+                <div class="pending-actions">
+                    <button class="btn btn-outline btn-sm" onclick="seleccionarTodos()">☑️ Seleccionar Todos</button>
+                    <button class="btn btn-success" id="btnProcesarSeleccionados" onclick="procesarSeleccionados()" disabled>
+                        ⚙️ Procesar Seleccionados
+                    </button>
+                </div>
+            </div>
+
+            <div id="filesTableContainer">
+                <table class="files-table">
+                    <thead>
+                        <tr>
+                            <th class="checkbox-cell">
+                                <input type="checkbox" class="file-checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                            </th>
+                            <th>Archivo Excel</th>
+                            <th>Fecha</th>
+                            <th>Registros</th>
+                            <th>PDFs</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="filesTableBody">
+                        <!-- Se llena dinámicamente -->
+                    </tbody>
+                </table>
+
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="empty-state-icon">📭</div>
+                    <p>No hay archivos pendientes de procesar</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progreso de procesamiento -->
+        <div class="progress-container" id="progressContainer">
+            <div class="section-title">⚙️ Procesando archivos...</div>
+            <div class="progress-bar-wrapper">
+                <div class="progress-bar" id="progressBar" style="width: 0%">0%</div>
+            </div>
+            <div class="progress-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statProcessed">0</div>
+                    <div class="stat-label">Procesados</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statSuccess">0</div>
+                    <div class="stat-label">Exitosos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statFailed">0</div>
+                    <div class="stat-label">Fallidos</div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer-info">
+            <h3 class="footer-title">
+                <span>ℹ️</span> Información Importante
+            </h3>
+            <ul class="footer-list">
+                <li>• <strong>Cada usuario</strong> tiene su propio espacio de trabajo</li>
+                <li>• <strong>Cada registro</strong> del Excel debe tener su PDF correspondiente</li>
+                <li>• El PDF se nombra según la columna <strong>"Nombre_PDF"</strong> del Excel</li>
+                <li>• Los PDFs deben subirse a <strong>tu directorio personal</strong> vía FTP</li>
+                <li>• Los PDFs son renombrados automáticamente al procesar (para evitar duplicados)</li>
+                <li>• Los archivos procesados se moverán a tu carpeta de históricos</li>
+            </ul>
+        </footer>
+
+        </div><!-- Fin tab-carga -->
+
+        <!-- ============== SECCIÓN: MIS REGISTROS ============== -->
+        <div class="tab-content" id="tab-registros">
+            <div class="upload-container">
+                <div class="pending-header">
+                    <div class="section-title" style="margin-bottom: 0;">
+                        📋 Registros Cargados
+                        <button class="refresh-btn" onclick="cargarMisRegistros()" title="Actualizar lista">🔄</button>
+                    </div>
+                    <div class="pending-actions">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #64748b;">
+                            <input type="checkbox" id="mostrarInactivos" onchange="cargarMisRegistros()">
+                            Mostrar eliminados
+                        </label>
+                    </div>
+                </div>
+
+                <div id="registrosTableContainer">
+                    <table class="files-table" id="registrosTable">
+                        <thead>
+                            <tr>
+                                <th>ID Registro</th>
+                                <th>Contribuyente</th>
+                                <th>Razón Social</th>
+                                <th>No. Acto</th>
+                                <th>PDF</th>
+                                <th>Estado</th>
+                                <th>Fecha Carga</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registrosTableBody">
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+
+                    <div class="empty-state" id="emptyRegistros" style="display: none;">
+                        <div class="empty-state-icon">📭</div>
+                        <p>No tienes registros cargados</p>
+                    </div>
+                </div>
+            </div>
+        </div><!-- Fin tab-registros -->
+
+        <!-- ============== SECCIÓN: AUDITORÍA ============== -->
+        <div class="tab-content" id="tab-auditoria">
+            <div class="upload-container">
+                <div class="pending-header">
+                    <div class="section-title" style="margin-bottom: 0;">
+                        📝 Historial de Actividad
+                        <button class="refresh-btn" onclick="cargarAuditoria()" title="Actualizar">🔄</button>
+                    </div>
+                </div>
+
+                <!-- Filtros de auditoría -->
+                <div id="auditoriaFiltros" style="margin-bottom: 1rem; padding: 1rem; background: #f8fafc; border-radius: 0.5rem; display: none;">
+                    <div style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 0.25rem;">Usuario</label>
+                            <select id="filtroUsuarioAuditoria" class="user-select" onchange="aplicarFiltrosAuditoria()">
+                                <option value="">Todos los usuarios</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 0.25rem;">Acción</label>
+                            <select id="filtroAccionAuditoria" class="user-select" onchange="aplicarFiltrosAuditoria()">
+                                <option value="">Todas las acciones</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-sm btn-outline" onclick="limpiarFiltrosAuditoria()">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="auditoriaContainer">
+                    <table class="files-table" id="auditoriaTable">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Acción</th>
+                                <th>Archivo</th>
+                                <th>ID Registro</th>
+                                <th>Resultado</th>
+                                <th>Mensaje</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditoriaTableBody">
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+
+                    <div class="empty-state" id="emptyAuditoria" style="display: none;">
+                        <div class="empty-state-icon">📭</div>
+                        <p>No hay actividad registrada</p>
+                    </div>
+                </div>
+            </div>
+        </div><!-- Fin tab-auditoria -->
+
+        <!-- ============== SECCIÓN: GESTIÓN DE USUARIOS (solo admin_dependencia) ============== -->
+        <div class="tab-content admin-only" id="tab-usuarios">
+            <!-- Info del administrador -->
+            <div class="info-box" style="margin-bottom: 1rem;">
+                <div class="info-box-title">👤 Panel de Administración de Usuarios</div>
+                <div class="info-box-content">
+                    <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                        <div><strong>Tu rol:</strong> <span id="adminRolDisplay" class="rol-tag" style="margin-left: 0.5rem;">-</span></div>
+                        <div><strong>Organismo:</strong> <span id="adminOrganismoDisplay">-</span></div>
+                        <div><strong>Área:</strong> <span id="adminAreaDisplay">-</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="upload-container">
+                <div class="pending-header" style="border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1rem;">
+                    <div class="section-title" style="margin-bottom: 0; gap: 1rem;">
+                        👥 Usuarios de la Dependencia
+                    </div>
+                    <div class="pending-actions" style="display: flex; gap: 0.75rem; align-items: center;">
+                        <button class="btn btn-outline btn-sm" onclick="cargarUsuarios()" title="Actualizar lista">
+                            🔄 Actualizar
+                        </button>
+                        <button class="btn btn-primary" onclick="mostrarModalCrearUsuario()" style="padding: 0.6rem 1.25rem;">
+                            ➕ Crear Usuario
+                        </button>
+                    </div>
+                </div>
+
+                <div id="usuariosContainer" style="overflow-x: auto; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
+                    <table class="files-table" id="usuariosTable" style="min-width: 900px;">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Nombre Completo</th>
+                                <th>Email</th>
+                                <th>Área / Dependencia</th>
+                                <th>Rol</th>
+                                <th style="text-align: center;">Eliminar Reg.</th>
+                                <th>Estado</th>
+                                <th style="text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuariosTableBody">
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+
+                    <div class="empty-state" id="emptyUsuarios" style="display: none;">
+                        <div class="empty-state-icon">👥</div>
+                        <p>No hay usuarios en tu dependencia</p>
+                        <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.5rem;">
+                            Haz clic en "Crear Usuario" para añadir el primer usuario.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div><!-- Fin tab-usuarios -->
+
+    </div>
+
+    <script>
+        // ============================================================================
+        // CONFIGURACIÓN
+        // ============================================================================
+        const API_URL = 'api_carga_v3.php';
+        let archivosPendientes = [];
+        let currentUser = null;  // Usuario actual
+        
+        // Obtener username del usuario logueado
+        function getUsername() {
+            if (currentUser) return currentUser;
+            const userData = localStorage.getItem('user_data');
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    currentUser = user.username || 'guest';
+                    return currentUser;
+                } catch (e) {}
+            }
+            return 'guest';
+        }
+
+        // ============================================================================
+        // VERIFICAR SESIÓN Y PERMISOS
+        // ============================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Verificar si está logueado
+            const userData = localStorage.getItem('user_data');
+            const authToken = localStorage.getItem('auth_token');
+
+            if (!userData && !authToken) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Mostrar nombre del usuario y configurar permisos
+            if (userData || authToken) {
+                try {
+                    const user = JSON.parse(userData);
+                    currentUser = user.username;
+                    document.getElementById('userName').textContent = user.nombre_completo || user.username || 'Usuario';
+
+                    // Mostrar pestañas según permisos
+                    configurarPestanasPorRol(user.rol);
+                } catch (e) {
+                    document.getElementById('userName').textContent = 'Usuario';
+                }
+            }
+
+            // Actualizar paths del usuario
+            actualizarPathsUsuario();
+
+            // Cargar archivos pendientes
+            cargarArchivosPendientes();
+        });
+
+        // Configurar pestañas según rol del usuario
+        function configurarPestanasPorRol(rol) {
+            const tabUsuarios = document.getElementById('tab-usuarios');
+
+            if (rol === 'admin_general' || rol === 'admin_dependencia') {
+                tabUsuarios.style.display = 'inline-flex';
+            } else {
+                tabUsuarios.style.display = 'none';
+            }
+        }
+        
+        // Actualizar la UI con los paths y datos del usuario
+        async function actualizarPathsUsuario() {
+            const username = getUsername();
+            const pathPdfs = document.getElementById('userPdfPath');
+            if (pathPdfs) {
+                pathPdfs.textContent = `/uploads/${username}/pdfs/`;
+            }
+            
+            // Mostrar organismo y área del usuario
+            const userData = localStorage.getItem('user_data');
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    const organismoEl = document.getElementById('userOrganismo');
+                    const areaEl = document.getElementById('userArea');
+                    
+                    if (organismoEl && user.organismo) {
+                        organismoEl.textContent = user.organismo;
+                    }
+                    if (areaEl && user.area) {
+                        areaEl.textContent = user.area;
+                    }
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                }
+            }
+        }
+
+        async function cerrarSesion() {
+            const confirmar = await showConfirm('¿Desea cerrar la sesión?', 'Cerrar Sesión', {
+                confirmText: 'Sí, cerrar',
+                cancelText: 'Cancelar',
+                confirmClass: 'danger'
+            });
+            
+            if (confirmar) {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('user_data');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // ============================================================================
+        // DRAG & DROP
+        // ============================================================================
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFiles(files);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFiles(e.target.files);
+            }
+        });
+
+        // ============================================================================
+        // SUBIR ARCHIVOS (solo a carpeta, no a BD)
+        // ============================================================================
+        async function handleFiles(files) {
+            for (let file of files) {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (!['xlsx', 'xls', 'csv'].includes(ext)) {
+                    showToast(`Archivo ${file.name}: formato no válido`, 'error');
+                    continue;
+                }
+
+                try {
+                    const username = getUsername();
+                    const formData = new FormData();
+                    formData.append('archivo', file);
+                    formData.append('action', 'upload_excel');
+                    formData.append('user', username);
+
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        const v = result.verificacion;
+                        let msg = `Archivo "${file.name}" subido correctamente.\n\n`;
+                        msg += `📊 Registros encontrados: ${v.total}\n`;
+                        msg += `✅ Con PDF: ${v.con_pdf}\n`;
+                        msg += `❌ Sin PDF: ${v.sin_pdf}\n\n`;
+                        
+                        if (v.sin_pdf > 0) {
+                            msg += `⚠️ Suba los PDFs faltantes a:\n`;
+                            msg += `/uploads/${username}/pdfs/\n\n`;
+                            msg += `Nombre esperado: [No_Acto_Administrativo].pdf`;
+                        }
+                        
+                        showAlert(msg, v.sin_pdf > 0 ? 'warning' : 'success', 'Archivo Subido');
+                    } else {
+                        showAlert(`Error al subir ${file.name}:\n${result.error}`, 'error');
+                    }
+                } catch (error) {
+                    showAlert(`Error de conexión al subir ${file.name}`, 'error');
+                }
+            }
+
+            fileInput.value = '';
+            cargarArchivosPendientes();
+        }
+
+        // ============================================================================
+        // CARGAR LISTA DE ARCHIVOS PENDIENTES
+        // ============================================================================
+        async function cargarArchivosPendientes() {
+            try {
+                const username = getUsername();
+                const response = await fetch(`${API_URL}?action=list_pending&user=${username}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    archivosPendientes = result.files;
+                    renderTablaArchivos();
+                } else if (result.error) {
+                    console.error('Error:', result.error);
+                }
+            } catch (error) {
+                console.error('Error cargando archivos:', error);
+            }
+        }
+
+        function renderTablaArchivos() {
+            const tbody = document.getElementById('filesTableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if (archivosPendientes.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                document.querySelector('.files-table').style.display = 'none';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            document.querySelector('.files-table').style.display = 'table';
+
+            tbody.innerHTML = archivosPendientes.map((file, index) => {
+                const listoParaProcesar = file.listo_para_procesar;
+                const tieneAlgunPdf = file.con_pdf > 0;
+                
+                return `
+                <tr data-index="${index}">
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="file-checkbox file-select" 
+                               data-index="${index}" 
+                               ${!listoParaProcesar ? 'disabled' : ''}
+                               onchange="actualizarBotonProcesar()">
+                    </td>
+                    <td>
+                        <div class="file-name">📊 ${file.nombre}</div>
+                        <div class="file-date">${file.tamano}</div>
+                    </td>
+                    <td>
+                        <div class="file-date">${file.fecha_subida}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600; color: #1e3a8a;">${file.total_registros}</div>
+                    </td>
+                    <td>
+                        ${file.sin_pdf === 0 
+                            ? `<span class="status-badge status-ready">✅ ${file.con_pdf}/${file.total_registros}</span>`
+                            : `<span class="status-badge status-missing" style="cursor: pointer;" onclick="verFaltantes(${index})">
+                                ❌ Faltan ${file.sin_pdf}
+                               </span>`
+                        }
+                        <div style="margin-top: 4px;">
+                            <div style="background: #e2e8f0; height: 6px; border-radius: 3px; overflow: hidden;">
+                                <div style="background: ${file.porcentaje_completo === 100 ? '#28a745' : '#dc2626'}; height: 100%; width: ${file.porcentaje_completo}%;"></div>
+                            </div>
+                            <small style="color: #64748b;">${file.porcentaje_completo}% completo</small>
+                        </div>
+                    </td>
+                    <td>
+                        ${listoParaProcesar 
+                            ? '<span class="status-badge status-ready">✅ Listo</span>'
+                            : '<span class="status-badge status-pending">⏳ Esperando PDFs</span>'
+                        }
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="verFaltantes(${index})" ${file.sin_pdf === 0 ? 'disabled' : ''}>
+                            👁️ Ver faltantes
+                        </button>
+                        <button class="btn btn-sm ${listoParaProcesar ? 'btn-success' : 'btn-secondary'}" 
+                                onclick="procesarArchivo(${index})"
+                                ${!listoParaProcesar ? 'disabled' : ''}>
+                            ⚙️ Procesar
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarArchivo(${index})">
+                            🗑️
+                        </button>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+        
+        // Ver PDFs faltantes
+        async function verFaltantes(index) {
+            const file = archivosPendientes[index];
+            
+            if (!file.registros_faltantes || file.registros_faltantes.length === 0) {
+                showAlert('No hay PDFs faltantes para este archivo', 'success');
+                return;
+            }
+            
+            let mensaje = `📋 PDFs faltantes para "${file.nombre}":\n\n`;
+            mensaje += `Total registros: ${file.total_registros}\n`;
+            mensaje += `Con PDF: ${file.con_pdf}\n`;
+            mensaje += `Sin PDF: ${file.sin_pdf}\n\n`;
+            mensaje += `─────────────────────────────\n`;
+            mensaje += `Fila  |  No. Acto  |  PDF esperado\n`;
+            mensaje += `─────────────────────────────\n`;
+            
+            file.registros_faltantes.slice(0, 15).forEach(reg => {
+                mensaje += `${reg.fila}  |  ${reg.no_acto}  |  ${reg.pdf_esperado}\n`;
+            });
+            
+            if (file.registros_faltantes.length > 15) {
+                mensaje += `\n... y ${file.registros_faltantes.length - 15} más`;
+            }
+            
+            const username = getUsername();
+            mensaje += `\n\n📁 Suba los PDFs a:\n/uploads/${username}/pdfs/`;
+            
+            await showAlert(mensaje, 'warning', 'PDFs Faltantes');
+        }
+
+        // ============================================================================
+        // SELECCIÓN DE ARCHIVOS
+        // ============================================================================
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAllCheckbox');
+            const checkboxes = document.querySelectorAll('.file-select:not(:disabled)');
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            actualizarBotonProcesar();
+        }
+
+        function seleccionarTodos() {
+            const checkboxes = document.querySelectorAll('.file-select:not(:disabled)');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            document.getElementById('selectAllCheckbox').checked = !allChecked;
+            actualizarBotonProcesar();
+        }
+
+        function actualizarBotonProcesar() {
+            const checkboxes = document.querySelectorAll('.file-select:checked');
+            const btn = document.getElementById('btnProcesarSeleccionados');
+            btn.disabled = checkboxes.length === 0;
+            btn.textContent = checkboxes.length > 0 
+                ? `⚙️ Procesar Seleccionados (${checkboxes.length})`
+                : '⚙️ Procesar Seleccionados';
+        }
+
+        // ============================================================================
+        // PROCESAR ARCHIVOS
+        // ============================================================================
+        async function procesarArchivo(index) {
+            const file = archivosPendientes[index];
+            
+            if (!file.listo_para_procesar) {
+                showAlert(`Este archivo tiene ${file.sin_pdf} registro(s) sin PDF.\n\nSuba los PDFs faltantes primero.`, 'warning', 'PDFs faltantes');
+                return;
+            }
+
+            const confirmar = await showConfirm(
+                `¿Desea procesar el archivo "${file.nombre}"?\n\n` +
+                `📊 Registros: ${file.total_registros}\n` +
+                `✅ Con PDF: ${file.con_pdf}`,
+                'Confirmar Procesamiento'
+            );
+            if (!confirmar) return;
+
+            await procesarArchivos([file]);
+        }
+
+        async function procesarSeleccionados() {
+            const checkboxes = document.querySelectorAll('.file-select:checked');
+            const archivosAProcesar = [];
+
+            checkboxes.forEach(cb => {
+                const index = parseInt(cb.dataset.index);
+                if (archivosPendientes[index].listo_para_procesar) {
+                    archivosAProcesar.push(archivosPendientes[index]);
+                }
+            });
+
+            if (archivosAProcesar.length === 0) {
+                showAlert('No hay archivos seleccionados listos para procesar', 'warning');
+                return;
+            }
+
+            const totalRegistros = archivosAProcesar.reduce((sum, f) => sum + f.total_registros, 0);
+            
+            const confirmar = await showConfirm(
+                `¿Procesar ${archivosAProcesar.length} archivo(s)?\n\n` +
+                `📊 Total registros: ${totalRegistros}`,
+                'Confirmar Procesamiento', {
+                    confirmText: 'Procesar',
+                    confirmClass: 'success'
+                }
+            );
+            if (!confirmar) return;
+
+            await procesarArchivos(archivosAProcesar);
+        }
+
+        async function procesarArchivos(archivos) {
+            const progressContainer = document.getElementById('progressContainer');
+            progressContainer.classList.add('active');
+
+            let totalArchivos = archivos.length;
+            let archivosProcesados = 0;
+            let totalInsertados = 0;
+            let totalSinPdf = 0;
+            let totalErrores = 0;
+            let detallesSinPdf = [];
+
+            document.getElementById('statTotal').textContent = totalArchivos;
+
+            for (let archivo of archivos) {
+                try {
+                    const username = getUsername();
+                    const formData = new FormData();
+                    formData.append('action', 'process_file');
+                    formData.append('excel_file', archivo.nombre);
+                    formData.append('user', username);
+
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    archivosProcesados++;
+                    
+                    if (result.success) {
+                        totalInsertados += result.insertados || 0;
+                        totalSinPdf += result.sin_pdf || 0;
+                        totalErrores += result.errores || 0;
+                        
+                        if (result.sin_pdf_detalle) {
+                            detallesSinPdf = detallesSinPdf.concat(result.sin_pdf_detalle);
+                        }
+                    } else {
+                        totalErrores++;
+                        console.error(`Error en ${archivo.nombre}:`, result.error);
+                    }
+
+                } catch (error) {
+                    archivosProcesados++;
+                    totalErrores++;
+                    console.error(`Error procesando ${archivo.nombre}:`, error);
+                }
+
+                // Actualizar progreso
+                const porcentaje = Math.round((archivosProcesados / totalArchivos) * 100);
+                document.getElementById('progressBar').style.width = porcentaje + '%';
+                document.getElementById('progressBar').textContent = porcentaje + '%';
+                document.getElementById('statProcessed').textContent = archivosProcesados;
+                document.getElementById('statSuccess').textContent = totalInsertados;
+                document.getElementById('statFailed').textContent = totalSinPdf + totalErrores;
+            }
+
+            // Finalizado
+            setTimeout(async () => {
+                progressContainer.classList.remove('active');
+                
+                let mensaje = `📊 Resultado del procesamiento:\n\n`;
+                mensaje += `✅ Registros insertados: ${totalInsertados}\n`;
+                
+                if (totalSinPdf > 0) {
+                    mensaje += `⚠️ Sin PDF (omitidos): ${totalSinPdf}\n`;
+                }
+                if (totalErrores > 0) {
+                    mensaje += `❌ Errores: ${totalErrores}\n`;
+                }
+                
+                if (detallesSinPdf.length > 0) {
+                    mensaje += `\n📋 Registros sin PDF:\n`;
+                    detallesSinPdf.slice(0, 10).forEach(d => {
+                        mensaje += `  Fila ${d.fila}: ${d.no_acto} → ${d.pdf_esperado}\n`;
+                    });
+                    if (detallesSinPdf.length > 10) {
+                        mensaje += `  ... y ${detallesSinPdf.length - 10} más\n`;
+                    }
+                }
+                
+                const tipo = totalSinPdf > 0 || totalErrores > 0 ? 'warning' : 'success';
+                await showAlert(mensaje, tipo, 'Procesamiento Completado');
+                
+                cargarArchivosPendientes();
+            }, 500);
+        }
+
+        // ============================================================================
+        // ELIMINAR ARCHIVO EXCEL PENDIENTE
+        // ============================================================================
+        async function eliminarArchivo(index) {
+            const file = archivosPendientes[index];
+            
+            const confirmar = await showConfirm(`¿Eliminar el archivo "${file.nombre}"?`, 'Confirmar Eliminación', {
+                confirmText: 'Eliminar',
+                confirmClass: 'danger'
+            });
+            if (!confirmar) return;
+
+            try {
+                const username = getUsername();
+                const formData = new FormData();
+                formData.append('action', 'delete_excel');
+                formData.append('filename', file.nombre);
+                formData.append('user', username);
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Archivo eliminado correctamente', 'success');
+                    cargarArchivosPendientes();
+                } else {
+                    showAlert('Error al eliminar: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error de conexión al eliminar el archivo', 'error');
+            }
+        }
+
+        // ============================================================================
+        // CAMBIAR PESTAÑAS
+        // ============================================================================
+        function cambiarPestana(tab) {
+            // Actualizar botones de pestaña
+            document.querySelectorAll('.main-tab').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.tab === tab) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Mostrar contenido correspondiente
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('tab-' + tab).classList.add('active');
+
+            // Cargar datos de la pestaña
+            if (tab === 'registros') {
+                cargarMisRegistros();
+            } else if (tab === 'auditoria') {
+                cargarAuditoria();
+            } else if (tab === 'usuarios') {
+                // Verificar permisos antes de cargar
+                const userData = localStorage.getItem('user_data');
+                if (userData) {
+                    const user = JSON.parse(userData);
+                    if (user.rol === 'admin_general' || user.rol === 'admin_dependencia') {
+                        // Forzar visibilidad del CONTENEDOR (no del botón)
+                        const tabContent = document.querySelector('.tab-content[id="tab-usuarios"]');
+                        if (tabContent) {
+                            tabContent.style.display = 'block !important';
+                            tabContent.style.visibility = 'visible !important';
+                            tabContent.classList.add('show');
+                            tabContent.classList.add('active');
+                        }
+                        cargarUsuarios();
+                    } else {
+                        showAlert('No tienes permisos para acceder a esta sección', 'error');
+                    }
+                } else {
+                    showAlert('Sesión expirada. Por favor, inicia sesión nuevamente.', 'error');
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+
+        // ============================================================================
+        // GESTIÓN DE REGISTROS
+        // ============================================================================
+        let misRegistros = [];
+
+        async function cargarMisRegistros() {
+            try {
+                const username = getUsername();
+                const incluirInactivos = document.getElementById('mostrarInactivos')?.checked ? '1' : '0';
+                
+                const response = await fetch(`${API_URL}?action=list_registros&user=${username}&incluir_inactivos=${incluirInactivos}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    misRegistros = result.registros;
+                    renderTablaRegistros();
+                } else {
+                    console.error('Error:', result.error);
+                }
+            } catch (error) {
+                console.error('Error cargando registros:', error);
+            }
+        }
+
+        function renderTablaRegistros() {
+            const tbody = document.getElementById('registrosTableBody');
+            const emptyState = document.getElementById('emptyRegistros');
+            const table = document.getElementById('registrosTable');
+
+            if (misRegistros.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                table.style.display = 'none';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            table.style.display = 'table';
+
+            tbody.innerHTML = misRegistros.map((reg, index) => {
+                const activo = reg.activo == 1;
+                const fechaCarga = new Date(reg.created_at).toLocaleDateString('es-CO', {
+                    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                
+                return `
+                <tr class="${!activo ? 'registro-inactivo' : ''}">
+                    <td>
+                        <code style="font-size: 0.75rem; background: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 0.25rem;">
+                            ${reg.id_registro}
+                        </code>
+                    </td>
+                    <td>${reg.id_contribuyente}</td>
+                    <td>
+                        <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${reg.razon_social}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.8rem;">${reg.no_acto_administrativo}</div>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.75rem; color: #64748b;">
+                            ${reg.pdf_nombre_original || '-'}
+                        </div>
+                    </td>
+                    <td>
+                        ${activo 
+                            ? `<span class="status-badge status-active">✅ Activo</span>`
+                            : `<span class="status-badge status-inactive">❌ Eliminado</span>`
+                        }
+                    </td>
+                    <td>
+                        <div class="file-date">${fechaCarga}</div>
+                    </td>
+                    <td>
+                        ${activo 
+                            ? `<button class="action-icon-btn delete" onclick="desactivarRegistro('${reg.id_registro}')" title="Eliminar registro">
+                                🗑️
+                               </button>`
+                            : `<button class="action-icon-btn restore" onclick="restaurarRegistro('${reg.id_registro}')" title="Restaurar registro">
+                                ♻️
+                               </button>`
+                        }
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        async function desactivarRegistro(idRegistro) {
+            // Usando prompt nativo por simplicidad
+            const motivo = prompt('¿Por qué deseas eliminar este registro?\n\nEj: PDF incorrecto, datos erróneos...');
+
+            if (!motivo || motivo.trim() === '') return; // Cancelado o vacío
+
+            try {
+                const username = getUsername();
+                const formData = new FormData();
+                formData.append('action', 'deactivate_registro');
+                formData.append('id_registro', idRegistro);
+                formData.append('motivo', motivo || 'Sin motivo especificado');
+                formData.append('user', username);
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Registro eliminado correctamente', 'success');
+                    cargarMisRegistros();
+                } else {
+                    showAlert('Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error de conexión', 'error');
+            }
+        }
+
+        async function restaurarRegistro(idRegistro) {
+            const confirmar = await showConfirm('¿Restaurar este registro?', 'Confirmar Restauración', {
+                confirmText: 'Restaurar',
+                confirmClass: 'success'
+            });
+            if (!confirmar) return;
+
+            try {
+                const username = getUsername();
+                const formData = new FormData();
+                formData.append('action', 'restore_registro');
+                formData.append('id_registro', idRegistro);
+                formData.append('user', username);
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Registro restaurado correctamente', 'success');
+                    cargarMisRegistros();
+                } else {
+                    showAlert('Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error de conexión', 'error');
+            }
+        }
+
+        // ============================================================================
+        // AUDITORÍA
+        // ============================================================================
+        let auditoriaData = [];
+
+        async function cargarAuditoria() {
+            try {
+                const username = getUsername();
+                let url = `${API_URL}?action=get_auditoria&user=${username}&limit=100`;
+
+                // Agregar filtros si existen
+                if (filtrosAuditoria.usuario) {
+                    url += `&filtro_usuario=${encodeURIComponent(filtrosAuditoria.usuario)}`;
+                }
+                if (filtrosAuditoria.accion) {
+                    url += `&filtro_accion=${encodeURIComponent(filtrosAuditoria.accion)}`;
+                }
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.success) {
+                    auditoriaData = result.auditoria;
+                    renderTablaAuditoria();
+                } else {
+                    console.error('Error:', result.error);
+                }
+            } catch (error) {
+                console.error('Error cargando auditoría:', error);
+            }
+        }
+
+        function renderTablaAuditoria() {
+            const tbody = document.getElementById('auditoriaTableBody');
+            const emptyState = document.getElementById('emptyAuditoria');
+            const table = document.getElementById('auditoriaTable');
+            const filtrosDiv = document.getElementById('auditoriaFiltros');
+
+            if (auditoriaData.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                table.style.display = 'none';
+                filtrosDiv.style.display = 'none';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            table.style.display = 'table';
+            filtrosDiv.style.display = 'block';
+
+            // Configurar filtros si hay permisos
+            configurarFiltrosAuditoria();
+
+            const accionesLabels = {
+                'upload_excel': { label: '📤 Subir Excel', clase: 'accion-upload' },
+                'upload_excel_error': { label: '❌ Error Subida', clase: 'accion-error' },
+                'verificar_pdfs': { label: '🔍 Verificar PDFs', clase: 'accion-upload' },
+                'procesar_inicio': { label: '⚙️ Inicio Proceso', clase: 'accion-proceso' },
+                'procesar_exito': { label: '✅ Proceso Exitoso', clase: 'accion-proceso' },
+                'procesar_parcial': { label: '⚠️ Proceso Parcial', clase: 'accion-borrar' },
+                'procesar_error': { label: '❌ Error Proceso', clase: 'accion-error' },
+                'borrar_registro': { label: '🗑️ Eliminar Registro', clase: 'accion-borrar' },
+                'restaurar_registro': { label: '♻️ Restaurar', clase: 'accion-restaurar' },
+                'eliminar_excel': { label: '🗑️ Eliminar Excel', clase: 'accion-borrar' },
+                'login': { label: '🔐 Login', clase: 'accion-upload' },
+                'logout': { label: '🚪 Logout', clase: 'accion-upload' }
+            };
+
+            tbody.innerHTML = auditoriaData.map(aud => {
+                const fecha = new Date(aud.created_at).toLocaleDateString('es-CO', {
+                    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                
+                const accionInfo = accionesLabels[aud.accion] || { label: aud.accion, clase: '' };
+                
+                return `
+                <tr>
+                    <td>
+                        <div class="file-date">${fecha}</div>
+                    </td>
+                    <td>
+                        <span class="accion-tag ${accionInfo.clase}">${accionInfo.label}</span>
+                    </td>
+                    <td>
+                        <div style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; font-size: 0.8rem;">
+                            ${aud.archivo_excel || '-'}
+                        </div>
+                    </td>
+                    <td>
+                        ${aud.id_registro 
+                            ? `<code style="font-size: 0.7rem;">${aud.id_registro}</code>`
+                            : '-'
+                        }
+                    </td>
+                    <td>
+                        <span class="resultado-${aud.resultado}">${aud.resultado?.toUpperCase() || '-'}</span>
+                    </td>
+                    <td>
+                        <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; font-size: 0.8rem; color: #64748b;">
+                            ${aud.mensaje || '-'}
+                        </div>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        // ============================================================================
+        // GESTIÓN DE USUARIOS (solo admin_dependencia)
+        // ============================================================================
+        let usuarios = [];
+
+        async function cargarUsuarios() {
+            try {
+                const username = getUsername();
+
+                // Verificar que tenemos un username válido
+                if (!username || username === 'guest') {
+                    showAlert('Usuario no identificado correctamente', 'error');
+                    return;
+                }
+
+                const response = await fetch(`api_auth.php?action=list_users_dependencia&user=${username}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    usuarios = result.users;
+                    renderTablaUsuarios();
+                } else {
+                    showAlert('Error al cargar usuarios: ' + (result.error || 'Error desconocido'), 'error');
+                }
+            } catch (error) {
+                showAlert('Error de conexión al cargar usuarios', 'error');
+            }
+        }
+
+        function renderTablaUsuarios() {
+            const tbody = document.getElementById('usuariosTableBody');
+            const emptyState = document.getElementById('emptyUsuarios');
+            const table = document.getElementById('usuariosTable');
+
+            // Verificar que los elementos existen
+            if (!tbody || !emptyState || !table) {
+                showAlert('Error interno: elementos del DOM no encontrados', 'error');
+                return;
+            }
+
+            // Actualizar info del admin
+            actualizarInfoAdmin();
+
+            if (usuarios.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                table.style.display = 'none';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            table.style.display = 'table';
+            table.style.visibility = 'visible';
+
+            const rolLabels = {
+                'admin_general': 'Admin General',
+                'admin_dependencia': 'Admin Dependencia',
+                'operador': 'Operador',
+                'consulta': 'Consulta'
+            };
+
+            let htmlRows = '';
+            for (let i = 0; i < usuarios.length; i++) {
+                const user = usuarios[i];
+                const rolClass = `rol-${user.rol}`;
+                const rolLabel = rolLabels[user.rol] || user.rol;
+                const permisoClass = user.permisos_eliminacion ? 'permiso-si' : 'permiso-no';
+                const permisoText = user.permisos_eliminacion ? '✅ Sí' : '❌ No';
+                const estadoClass = user.activo ? 'status-ready' : 'status-missing';
+                const estadoText = user.activo ? 'Activo' : 'Inactivo';
+                const rowClass = user.activo ? '' : 'registro-inactivo';
+
+                // Para admin_dependencia, siempre mostrar que puede eliminar
+                const esAdmin = user.rol === 'admin_dependencia' || user.rol === 'admin_general';
+                const permisoDisplay = esAdmin ? '✅ Sí (Admin)' : permisoText;
+                const permisoClassFinal = esAdmin ? 'permiso-si' : permisoClass;
+
+                htmlRows += `<tr class="${rowClass}">`;
+                htmlRows += `<td><span style="font-weight: 600; color: #1e3a8a;">👤 ${user.username}</span></td>`;
+                htmlRows += `<td><span title="${user.nombre_completo}">${user.nombre_completo}</span></td>`;
+                htmlRows += `<td><span style="font-size: 0.85rem; color: #64748b;">${user.email || '<em style="color: #94a3b8;">Sin email</em>'}</span></td>`;
+                htmlRows += `<td><span style="font-size: 0.8rem;" title="${user.area}">📁 ${user.area}</span></td>`;
+                htmlRows += `<td><span class="rol-tag ${rolClass}">${rolLabel}</span></td>`;
+                htmlRows += `<td style="text-align: center;"><span class="permiso-tag ${permisoClassFinal}">${permisoDisplay}</span></td>`;
+                htmlRows += `<td><span class="status-badge ${estadoClass}">${estadoText}</span></td>`;
+                htmlRows += `<td style="text-align: center;">
+                    <div style="display: inline-flex; gap: 0.5rem;">
+                        <button class="action-icon-btn" onclick="editarUsuario(${user.id})" title="Editar usuario">✏️</button>
+                        ${user.activo 
+                            ? `<button class="action-icon-btn delete" onclick="cambiarEstadoUsuario(${user.id}, 0)" title="Desactivar usuario">🚫</button>`
+                            : `<button class="action-icon-btn restore" onclick="cambiarEstadoUsuario(${user.id}, 1)" title="Activar usuario">✅</button>`
+                        }
+                    </div>
+                </td>`;
+                htmlRows += '</tr>';
+            }
+
+            tbody.innerHTML = htmlRows;
+        }
+
+        function actualizarInfoAdmin() {
+            const userData = localStorage.getItem('user_data');
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    const rolDisplay = document.getElementById('adminRolDisplay');
+                    const organismoDisplay = document.getElementById('adminOrganismoDisplay');
+                    const areaDisplay = document.getElementById('adminAreaDisplay');
+                    
+                    if (rolDisplay) {
+                        const rolLabels = {
+                            'admin_general': 'Administrador General',
+                            'admin_dependencia': 'Admin de Dependencia'
+                        };
+                        rolDisplay.textContent = rolLabels[user.rol] || user.rol;
+                        rolDisplay.className = `rol-tag rol-${user.rol}`;
+                    }
+                    if (organismoDisplay) {
+                        organismoDisplay.textContent = user.organismo || '-';
+                    }
+                    if (areaDisplay) {
+                        areaDisplay.textContent = user.area || '-';
+                    }
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                }
+            }
+        }
+
+        // Áreas/dependencias disponibles para selección
+        const areasDisponibles = [
+            { value: 'DIRECCIÓN GENERAL', label: 'Dirección General' },
+            { value: 'SUBDIRECCIÓN DE TESORERÍA', label: 'Subdirección de Tesorería' },
+            { value: 'SUBDIRECCIÓN DE TESORERÍA - OFICINA TÉCNICA OPERATIVA DE COBRO COACTIVO', label: 'Tesorería - Cobro Coactivo' },
+            { value: 'SUBDIRECCIÓN DE CATASTRO', label: 'Subdirección de Catastro' },
+            { value: 'SUBDIRECCIÓN DE FISCALIZACIÓN', label: 'Subdirección de Fiscalización' },
+            { value: 'SUBDIRECCIÓN DE IMPUESTOS Y RENTAS', label: 'Subdirección de Impuestos y Rentas' },
+            { value: 'SUBDIRECCIÓN DE CONTABILIDAD', label: 'Subdirección de Contabilidad' },
+            { value: 'SUBDIRECCIÓN DE PRESUPUESTO', label: 'Subdirección de Presupuesto' }
+        ];
+
+        async function mostrarModalCrearUsuario() {
+            // Obtener el rol del usuario actual para determinar qué roles puede crear
+            const userData = localStorage.getItem('user_data');
+            let userRol = 'consulta';
+            let userOrganismo = '';
+            let userArea = '';
+            
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    userRol = user.rol;
+                    userOrganismo = user.organismo || 'DEPARTAMENTO ADMINISTRATIVO DE HACIENDA';
+                    userArea = user.area || '';
+                } catch (e) {}
+            }
+
+            // Construir las opciones del select según el rol
+            let rolOptions = '';
+            const esAdminGeneral = userRol === 'admin_general';
+            
+            if (esAdminGeneral) {
+                rolOptions = `
+                    <option value="admin_dependencia">Administrador de Dependencia</option>
+                    <option value="operador">Operador</option>
+                    <option value="consulta">Solo Consulta</option>
+                `;
+            } else if (userRol === 'admin_dependencia') {
+                rolOptions = `
+                    <option value="operador">Operador</option>
+                    <option value="consulta">Solo Consulta</option>
+                `;
+            }
+
+            // Construir opciones de área
+            let areaOptions = areasDisponibles.map(area => 
+                `<option value="${area.value}">${area.label}</option>`
+            ).join('');
+
+            const formHtml = `
+                <form id="userForm" onsubmit="guardarUsuario(event)">
+                    <div class="user-form-row">
+                        <div class="user-form-group">
+                            <label for="username">Nombre de usuario<span class="required">*</span></label>
+                            <input type="text" id="username" name="username" class="user-input" 
+                                   placeholder="ej: tesoreria3" required autocomplete="off">
+                        </div>
+                        <div class="user-form-group">
+                            <label for="password">Contraseña<span class="required">*</span></label>
+                            <input type="password" id="password" name="password" class="user-input" 
+                                   placeholder="Mínimo 6 caracteres" required autocomplete="new-password">
+                        </div>
+                    </div>
+
+                    <div class="user-form-group">
+                        <label for="nombre_completo">Nombre completo<span class="required">*</span></label>
+                        <input type="text" id="nombre_completo" name="nombre_completo" class="user-input" 
+                               placeholder="ej: María García López" required>
+                    </div>
+
+                    <div class="user-form-group">
+                        <label for="email">Correo electrónico</label>
+                        <input type="email" id="email" name="email" class="user-input" 
+                               placeholder="ej: usuario@hacienda.gov.co">
+                    </div>
+
+                    <div class="user-form-section">
+                        <div class="user-form-section-title">🔐 Permisos y Rol</div>
+                        
+                        <div class="user-form-group">
+                            <label for="rol">Rol del usuario<span class="required">*</span></label>
+                            <select id="rol" name="rol" class="user-select" required onchange="toggleRolOptions()">
+                                ${rolOptions}
+                            </select>
+                        </div>
+
+                        ${esAdminGeneral ? `
+                        <div class="user-form-group area-select-group" id="areaSelectGroup">
+                            <label for="area_usuario">Área / Dependencia<span class="required">*</span></label>
+                            <select id="area_usuario" name="area_usuario" class="user-select">
+                                ${areaOptions}
+                            </select>
+                            <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.35rem;">
+                                ℹ️ Selecciona la dependencia a la que pertenecerá este usuario
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <div class="user-form-group" id="permisosEliminacionGroup">
+                            <label class="user-checkbox-label">
+                                <input type="checkbox" id="permisos_eliminacion" name="permisos_eliminacion" class="user-checkbox">
+                                Permitir eliminar/desactivar registros
+                            </label>
+                        </div>
+
+                        <div class="user-form-group" id="adminPermisoInfo" style="display: none;">
+                            <div style="background: #d1fae5; border: 1px solid #10b981; border-radius: 0.375rem; padding: 0.75rem; font-size: 0.85rem; color: #065f46;">
+                                ✅ Los administradores pueden eliminar registros automáticamente
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            `;
+
+            const modal = document.createElement('div');
+            modal.className = 'custom-modal-overlay';
+            modal.innerHTML = `
+                <div class="custom-modal user-modal">
+                    <div class="custom-modal-header">
+                        <div class="custom-modal-icon info">👤</div>
+                        <h3 class="custom-modal-title">Crear Nuevo Usuario</h3>
+                        <button class="close-modal-button" onclick="cerrarModal()">×</button>
+                    </div>
+                    <div class="custom-modal-body" style="max-height: 70vh; overflow-y: auto;">
+                        ${formHtml}
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button class="custom-modal-btn custom-modal-btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                        <button class="custom-modal-btn custom-modal-btn-success" onclick="document.getElementById('userForm').dispatchEvent(new Event('submit'))">
+                            ➕ Crear Usuario
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            setTimeout(() => {
+                modal.classList.add('show');
+                toggleRolOptions(); // Configurar opciones según rol inicial
+            }, 10);
+        }
+
+        function toggleRolOptions() {
+            const rolSelect = document.getElementById('rol');
+            const areaGroup = document.getElementById('areaSelectGroup');
+            const permisosGroup = document.getElementById('permisosEliminacionGroup');
+            const adminInfo = document.getElementById('adminPermisoInfo');
+            
+            const rolSeleccionado = rolSelect ? rolSelect.value : '';
+            const esRolAdmin = rolSeleccionado === 'admin_dependencia';
+            
+            // Mostrar selector de área si existe (solo admin_general lo tiene)
+            if (areaGroup) {
+                areaGroup.classList.add('visible');
+            }
+            
+            // Ocultar checkbox de permisos si es admin, mostrar mensaje informativo
+            if (permisosGroup && adminInfo) {
+                if (esRolAdmin) {
+                    permisosGroup.style.display = 'none';
+                    adminInfo.style.display = 'block';
+                } else {
+                    permisosGroup.style.display = 'block';
+                    adminInfo.style.display = 'none';
+                }
+            }
+        }
+
+        async function guardarUsuario(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const nombreCompleto = document.getElementById('nombre_completo').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const rol = document.getElementById('rol').value;
+            const permisosEliminacion = document.getElementById('permisos_eliminacion').checked ? '1' : '0';
+            
+            // Validaciones básicas
+            if (!username || username.length < 3) {
+                showAlert('El nombre de usuario debe tener al menos 3 caracteres', 'warning');
+                return;
+            }
+            if (!password || password.length < 6) {
+                showAlert('La contraseña debe tener al menos 6 caracteres', 'warning');
+                return;
+            }
+            if (!nombreCompleto) {
+                showAlert('El nombre completo es requerido', 'warning');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('action', 'create_user');
+            formData.append('user', getUsername());
+            formData.append('username', username);
+            formData.append('password', password);
+            formData.append('nombre_completo', nombreCompleto);
+            formData.append('email', email);
+            formData.append('rol', rol);
+            formData.append('permisos_eliminacion', permisosEliminacion);
+            
+            // Si existe el selector de área (admin general), enviar el área seleccionada
+            const areaSelect = document.getElementById('area_usuario');
+            if (areaSelect) {
+                formData.append('area', areaSelect.value);
+            }
+
+            try {
+                const response = await fetch('api_auth.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(`✅ Usuario "${username}" creado exitosamente`, 'success', 'Usuario Creado');
+                    cerrarModal();
+                    cargarUsuarios();
+                } else {
+                    showAlert('Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error de conexión al crear usuario', 'error');
+            }
+        }
+
+        async function cambiarEstadoUsuario(userId, nuevoEstado) {
+            const accion = nuevoEstado ? 'activar' : 'desactivar';
+            const confirmar = await showConfirm(
+                `¿Desea ${accion} este usuario?`,
+                `${accion.charAt(0).toUpperCase() + accion.slice(1)} Usuario`
+            );
+
+            if (!confirmar) return;
+
+            try {
+                const formData = new FormData();
+                formData.append('action', 'toggle_user_status');
+                formData.append('user', getUsername());
+                formData.append('user_id', userId);
+                formData.append('activo', nuevoEstado);
+
+                const response = await fetch('api_auth.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(`Usuario ${nuevoEstado ? 'activado' : 'desactivado'} exitosamente`, 'success');
+                    cargarUsuarios();
+                } else {
+                    showAlert('Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error de conexión', 'error');
+            }
+        }
+
+        function editarUsuario(userId) {
+            // Por simplicidad, mostrar mensaje de que la edición está disponible próximamente
+            showAlert('Funcionalidad de edición próximamente disponible', 'info');
+        }
+
+        // ============================================================================
+        // FUNCIÓN DE DIAGNÓSTICO (para debug)
+        // ============================================================================
+        // ============================================================================
+        // REFRESCAR SESIÓN
+        // ============================================================================
+        async function refrescarSesion() {
+            try {
+                const username = getUsername();
+                const authToken = localStorage.getItem('auth_token');
+
+                if (!username || !authToken) {
+                    showAlert('No hay sesión activa', 'error');
+                    return;
+                }
+
+                // Obtener información actualizada del usuario
+                const response = await fetch(`api_auth.php?action=get_user&username=${username}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    // Actualizar localStorage con la información actualizada
+                    const userData = {
+                        id: result.user.id,
+                        username: result.user.username,
+                        nombre: result.user.nombre_completo,
+                        email: result.user.email,
+                        organismo: result.user.organismo,
+                        area: result.user.area,
+                        rol: result.user.rol
+                    };
+
+                    localStorage.setItem('user_data', JSON.stringify(userData));
+                    currentUser = result.user.username;
+
+                    // Actualizar la UI
+                    document.getElementById('userName').textContent = result.user.nombre_completo || result.user.username;
+                    actualizarPathsUsuario();
+                    configurarPestanasPorRol(result.user.rol);
+
+                    showAlert('Sesión actualizada correctamente', 'success');
+
+                    // Si estamos en la pestaña de usuarios, recargar
+                    const activeTab = document.querySelector('.main-tab.active');
+                    if (activeTab && activeTab.dataset.tab === 'usuarios') {
+                        cargarUsuarios();
+                    }
+                } else {
+                    showAlert('Error al refrescar sesión', 'error');
+                }
+            } catch (error) {
+                showAlert('Error de conexión', 'error');
+            }
+        }
+
+
+
+        function cerrarModal() {
+            const modal = document.querySelector('.custom-modal-overlay');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+
+        // ============================================================================
+        // FILTROS DE AUDITORÍA
+        // ============================================================================
+        let filtrosAuditoria = {
+            usuario: '',
+            accion: ''
+        };
+
+        function configurarFiltrosAuditoria() {
+            // Obtener datos de la última respuesta de API
+            const userData = localStorage.getItem('user_data');
+            if (!userData) return;
+
+            const user = JSON.parse(userData);
+
+            // Solo mostrar filtros si tiene permisos
+            const filtrosDiv = document.getElementById('auditoriaFiltros');
+            if (user.rol === 'admin_general' || user.rol === 'admin_dependencia') {
+                filtrosDiv.style.display = 'block';
+
+                // Poblar filtro de usuarios
+                const selectUsuario = document.getElementById('filtroUsuarioAuditoria');
+                selectUsuario.innerHTML = '<option value="">Todos los usuarios</option>';
+
+                // Los usuarios disponibles vienen en la respuesta de la API
+                // Por simplicidad, agregamos una opción para filtrar
+                if (user.rol === 'admin_general') {
+                    selectUsuario.innerHTML += '<option value="">Opción de filtro disponible</option>';
+                }
+            } else {
+                filtrosDiv.style.display = 'none';
+            }
+        }
+
+        function aplicarFiltrosAuditoria() {
+            const filtroUsuario = document.getElementById('filtroUsuarioAuditoria').value;
+            const filtroAccion = document.getElementById('filtroAccionAuditoria').value;
+
+            filtrosAuditoria.usuario = filtroUsuario;
+            filtrosAuditoria.accion = filtroAccion;
+
+            // Recargar auditoría con filtros
+            cargarAuditoria();
+        }
+
+        function limpiarFiltrosAuditoria() {
+            document.getElementById('filtroUsuarioAuditoria').value = '';
+            document.getElementById('filtroAccionAuditoria').value = '';
+            filtrosAuditoria.usuario = '';
+            filtrosAuditoria.accion = '';
+
+            cargarAuditoria();
+        }
+
+        // ============================================================================
+        // PROMPT PERSONALIZADO
+        // ============================================================================
+        async function showPrompt(mensaje, titulo = 'Ingrese un valor', options = {}) {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.className = 'custom-modal-overlay';
+                
+                overlay.innerHTML = `
+                    <div class="custom-modal">
+                        <div class="custom-modal-header">
+                            <div class="custom-modal-icon info">❓</div>
+                            <h3 class="custom-modal-title">${titulo}</h3>
+                        </div>
+                        <div class="custom-modal-body">
+                            <p class="custom-modal-message">${mensaje}</p>
+                            <input type="text" id="promptInput" class="search-input" 
+                                   placeholder="${options.placeholder || ''}" 
+                                   style="margin-top: 1rem;">
+                        </div>
+                        <div class="custom-modal-footer">
+                            <button class="custom-modal-btn custom-modal-btn-secondary" id="promptCancel">Cancelar</button>
+                            <button class="custom-modal-btn custom-modal-btn-primary" id="promptOk">Aceptar</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(overlay);
+                
+                setTimeout(() => overlay.classList.add('show'), 10);
+                
+                const input = overlay.querySelector('#promptInput');
+                input.focus();
+                
+                overlay.querySelector('#promptCancel').onclick = () => {
+                    overlay.classList.remove('show');
+                    setTimeout(() => overlay.remove(), 300);
+                    resolve(null);
+                };
+                
+                overlay.querySelector('#promptOk').onclick = () => {
+                    const value = input.value;
+                    overlay.classList.remove('show');
+                    setTimeout(() => overlay.remove(), 300);
+                    resolve(value);
+                };
+                
+                input.onkeypress = (e) => {
+                    if (e.key === 'Enter') {
+                        overlay.querySelector('#promptOk').click();
+                    }
+                };
+            });
+        }
+    </script>
+</body>
+</html>

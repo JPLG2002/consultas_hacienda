@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Departamento de Hacienda</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="alerts.js" defer></script>
+    <style>
+        /* Estilos específicos para Login */
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3366cc 50%, #1e3a8a 100%);
+        }
+
+        .login-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .login-header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .login-header-logo {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .login-header-title {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .login-header-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8rem;
+        }
+
+        .login-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+        }
+
+        .login-box-header {
+            background: #f8fafc;
+            padding: 2rem 2rem 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .login-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #3366cc 0%, #1e3a8a 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+            box-shadow: 0 4px 15px rgba(51, 102, 204, 0.4);
+        }
+
+        .login-box-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 0.25rem;
+        }
+
+        .login-box-subtitle {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .login-box-body {
+            padding: 2rem;
+        }
+
+        .login-form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .login-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-input-wrapper {
+            position: relative;
+        }
+
+        .login-input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+            color: #94a3b8;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 2.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #3366cc;
+            box-shadow: 0 0 0 3px rgba(51, 102, 204, 0.15);
+        }
+
+        .login-input::placeholder {
+            color: #94a3b8;
+        }
+
+        .login-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        .login-remember {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #475569;
+            cursor: pointer;
+        }
+
+        .login-remember input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            accent-color: #3366cc;
+            cursor: pointer;
+        }
+
+        .login-forgot {
+            color: #3366cc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-forgot:hover {
+            text-decoration: underline;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 0.95rem;
+            background: linear-gradient(135deg, #3366cc 0%, #1e3a8a 100%);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(51, 102, 204, 0.35);
+        }
+
+        .login-button:hover {
+            background: linear-gradient(135deg, #2855b3 0%, #1e3a8a 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(51, 102, 204, 0.45);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .login-button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .login-button-loading .login-button-text {
+            display: none;
+        }
+
+        .login-button-loading .login-button-spinner {
+            display: inline-block;
+        }
+
+        .login-button-spinner {
+            display: none;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .login-divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        .login-divider::before,
+        .login-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .login-divider span {
+            padding: 0 1rem;
+        }
+
+        .login-help {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .login-help a {
+            color: #3366cc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-help a:hover {
+            text-decoration: underline;
+        }
+
+        .login-box-footer {
+            background: #f8fafc;
+            padding: 1rem 2rem;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .login-footer-text {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        /* Alert de error */
+        .login-alert {
+            padding: 0.875rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.25rem;
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .login-alert.show {
+            display: flex;
+        }
+
+        .login-alert-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+
+        .login-alert-success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #16a34a;
+        }
+
+        .login-alert-icon {
+            font-size: 1.25rem;
+        }
+
+        /* Footer de página */
+        .login-page-footer {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .login-page-footer p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            margin: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1rem;
+            }
+
+            .login-box-header,
+            .login-box-body {
+                padding: 1.5rem;
+            }
+
+            .login-box-title {
+                font-size: 1.25rem;
+            }
+
+            .login-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-page">
+        <!-- Header -->
+        <header class="login-header">
+            <div class="login-header-container">
+                <div class="login-header-logo">🏛️</div>
+                <div>
+                    <div class="login-header-title">DEPARTAMENTO DE HACIENDA</div>
+                    <div class="login-header-subtitle">Alcaldía de Santiago de Cali</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Login Form -->
+        <div class="login-container">
+            <div class="login-box">
+                <div class="login-box-header">
+                    <div class="login-icon">🔐</div>
+                    <h1 class="login-box-title">Iniciar Sesión</h1>
+                    <p class="login-box-subtitle">Sistema de Consulta de Actos Administrativos</p>
+                </div>
+
+                <div class="login-box-body">
+                    <!-- Alert de error/éxito -->
+                    <div id="loginAlert" class="login-alert login-alert-error">
+                        <span class="login-alert-icon">⚠️</span>
+                        <span id="loginAlertMessage">Usuario o contraseña incorrectos</span>
+                    </div>
+
+                    <form id="loginForm" onsubmit="handleLogin(event)">
+                        <div class="login-form-group">
+                            <label class="login-label" for="username">Usuario</label>
+                            <div class="login-input-wrapper">
+                                <span class="login-input-icon">👤</span>
+                                <input 
+                                    type="text" 
+                                    id="username" 
+                                    name="username"
+                                    class="login-input" 
+                                    placeholder="Ingrese su usuario"
+                                    required
+                                    autocomplete="username"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="login-form-group">
+                            <label class="login-label" for="password">Contraseña</label>
+                            <div class="login-input-wrapper">
+                                <span class="login-input-icon">🔒</span>
+                                <input 
+                                    type="password" 
+                                    id="password" 
+                                    name="password"
+                                    class="login-input" 
+                                    placeholder="Ingrese su contraseña"
+                                    required
+                                    autocomplete="current-password"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="login-options">
+                            <label class="login-remember">
+                                <input type="checkbox" id="remember" name="remember">
+                                Recordarme
+                            </label>
+                            <a href="#" class="login-forgot">¿Olvidó su contraseña?</a>
+                        </div>
+
+                        <button type="submit" class="login-button" id="loginButton">
+                            <span class="login-button-spinner">🔄</span>
+                            <span class="login-button-text">Ingresar</span>
+                        </button>
+                    </form>
+
+                    <div class="login-divider">
+                        <span>Sistema interno</span>
+                    </div>
+
+                    <div class="login-help">
+                        ¿Necesita ayuda? <a href="#">Contacte al administrador</a>
+                    </div>
+                </div>
+
+                <div class="login-box-footer">
+                    <p class="login-footer-text">
+                        🔒 Conexión segura · Todos los derechos reservados © 2025
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="login-page-footer">
+            <p>Departamento Administrativo de Hacienda - Alcaldía de Santiago de Cali</p>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================================
+        // CONFIGURACIÓN DE LA API DE LOGIN
+        // ============================================================================
+        const API_LOGIN_URL = 'api_auth.php';
+
+        // ============================================================================
+        // FUNCIONES DE LOGIN
+        // ============================================================================
+        
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+            
+            // Validaciones básicas
+            if (!username || !password) {
+                showLoginAlert('Por favor complete todos los campos', 'error');
+                return;
+            }
+
+            // Mostrar estado de carga
+            setLoading(true);
+            hideLoginAlert();
+
+            try {
+                // Enviar como FormData para que PHP lo reciba correctamente
+                const formData = new FormData();
+                formData.append('action', 'login');
+                formData.append('username', username);
+                formData.append('password', password);
+
+                const response = await fetch(API_LOGIN_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Login exitoso
+                    showLoginAlert(`¡Bienvenido, ${data.user.nombre_completo}!`, 'success');
+                    
+                    // Guardar token y datos del usuario
+                    if (data.token) {
+                        localStorage.setItem('auth_token', data.token);
+                    }
+                    if (data.user) {
+                        localStorage.setItem('user_data', JSON.stringify({
+                            id: data.user.id,
+                            username: data.user.username,
+                            nombre: data.user.nombre_completo,
+                            email: data.user.email,
+                            organismo: data.user.organismo,
+                            area: data.user.area,
+                            rol: data.user.rol
+                        }));
+                    }
+
+                    // Redirigir a carga masiva
+                    setTimeout(() => {
+                        window.location.href = 'carga.html';
+                    }, 1000);
+                } else {
+                    // Error de login
+                    showLoginAlert(data.error || 'Usuario o contraseña incorrectos', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                showLoginAlert('Error de conexión con el servidor', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function showLoginAlert(message, type) {
+            const alertEl = document.getElementById('loginAlert');
+            const alertMessage = document.getElementById('loginAlertMessage');
+            
+            alertEl.className = `login-alert login-alert-${type} show`;
+            alertMessage.textContent = message;
+            
+            // Cambiar icono según tipo
+            const icon = alertEl.querySelector('.login-alert-icon');
+            icon.textContent = type === 'error' ? '⚠️' : '✅';
+        }
+
+        function hideLoginAlert() {
+            const alertEl = document.getElementById('loginAlert');
+            alertEl.classList.remove('show');
+        }
+
+        function setLoading(isLoading) {
+            const button = document.getElementById('loginButton');
+            const inputs = document.querySelectorAll('.login-input');
+            
+            if (isLoading) {
+                button.classList.add('login-button-loading');
+                button.disabled = true;
+                inputs.forEach(input => input.disabled = true);
+            } else {
+                button.classList.remove('login-button-loading');
+                button.disabled = false;
+                inputs.forEach(input => input.disabled = false);
+            }
+        }
+
+        // Verificar si ya hay sesión activa
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('auth_token');
+            const userData = localStorage.getItem('user_data');
+            
+            if (token || userData) {
+                // Ya hay sesión, redirigir a carga masiva
+                window.location.href = 'carga.html';
+            }
+        });
+    </script>
+</body>
+</html>
+

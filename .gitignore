@@ -1,0 +1,31 @@
+# Dependencias
+node_modules/
+vendor/
+
+# Archivos de configuración local
+.env
+.env.local
+config.local.php
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+__MACOSX/
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Archivos temporales
+tmp/
+temp/
+cache/
+
+# Archivos de backup
+*.bak
+*.backup

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Actos Administrativos - Hacienda</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilos específicos para la página de consultas simplificada */
+        .search-compact {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .search-compact .search-input {
+            flex: 1;
+            min-width: 200px;
+            margin: 0;
+        }
+        
+        .search-compact .search-button {
+            margin: 0;
+        }
+        
+        .search-compact-label {
+            font-weight: 600;
+            color: #1e3a8a;
+            white-space: nowrap;
+        }
+        
+        .results-always-visible {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            min-height: 400px;
+        }
+        
+        .empty-results {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            color: #64748b;
+            text-align: center;
+        }
+        
+        .empty-results-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .empty-results-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.5rem;
+        }
+        
+        .empty-results-text {
+            font-size: 0.9rem;
+            max-width: 300px;
+        }
+        
+        @media (max-width: 600px) {
+            .search-compact {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-compact-label {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient">
+    <!-- Barra de Navegación Superior -->
+    <nav class="main-navbar">
+        <div class="navbar-gov-strip"></div>
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <div class="navbar-logo">🏛️</div>
+                <div class="navbar-title-group">
+                    <span class="navbar-title">DEPARTAMENTO DE HACIENDA</span>
+                    <span class="navbar-subtitle">Alcaldía de Santiago de Cali</span>
+                </div>
+            </div>
+            <ul class="navbar-menu" id="navbarMenu">
+                <li><a href="index.html" class="navbar-link active">Consultas</a></li>
+                <li><a href="login.html" class="navbar-link" id="linkCargaMasiva">🔒 Carga Masiva</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="app" class="max-w-7xl mx-auto p-4 sm:p-6">
+
+        <!-- Buscador compacto -->
+        <div class="search-compact">
+            <span class="search-compact-label">🔍 Buscar por ID:</span>
+            <input
+                type="text"
+                id="id-busqueda"
+                placeholder="Ingrese cédula o número de predio"
+                class="search-input"
+            />
+            <button id="btn-buscar" class="search-button">
+                <span id="search-icon">🔍</span>
+                <span id="search-text">Buscar</span>
+            </button>
+        </div>
+
+        <div id="error-alert" class="error-alert-hidden"></div>
+
+        <!-- Resultados siempre visibles -->
+        <div id="results-container" class="results-always-visible">
+            <div class="tabs-container">
+                <button id="tab-tramite" data-tab="tramite" class="tab-button tab-active">
+                    <span class="icon-file-text">📄</span>
+                    <span>En Trámite</span>
+                    <span id="tramite-count" class="tab-count">0</span>
+                </button>
+                <button id="tab-historial" data-tab="historial" class="tab-button">
+                    <span class="icon-clock">🕒</span>
+                    <span>Histórico</span>
+                    <span id="historial-count" class="tab-count tab-inactive-count">0</span>
+                </button>
+            </div>
+            <div id="results-content" class="results-content-area">
+                <!-- Estado vacío inicial -->
+                <div class="empty-results" id="emptyState">
+                    <div class="empty-results-icon">🔍</div>
+                    <div class="empty-results-title">Ingrese un ID para consultar</div>
+                    <div class="empty-results-text">
+                        Puede buscar por número de cédula o número de predio para ver los actos administrativos asociados.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="detail-modal" class="modal-overlay-hidden">
+            <div id="modal-content" class="modal-content"></div>
+        </div>
+    </div>
+
+    <script src="alerts.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Verificar sesión y actualizar menú
+        document.addEventListener('DOMContentLoaded', () => {
+            const userData = localStorage.getItem('user_data');
+            const authToken = localStorage.getItem('auth_token');
+            const navbarMenu = document.getElementById('navbarMenu');
+            const linkCargaMasiva = document.getElementById('linkCargaMasiva');
+
+            if (userData || authToken) {
+                let userName = 'Usuario';
+                if (userData) {
+                    try {
+                        const user = JSON.parse(userData);
+                        userName = user.nombre_completo || user.username || 'Usuario';
+                    } catch (e) {}
+                }
+                
+                linkCargaMasiva.textContent = 'Carga Masiva';
+                linkCargaMasiva.href = 'carga.html';
+                
+                const userItem = document.createElement('li');
+                userItem.innerHTML = `<span class="navbar-link" style="opacity: 0.85; cursor: default;">👤 ${userName}</span>`;
+                navbarMenu.appendChild(userItem);
+                
+                const logoutItem = document.createElement('li');
+                logoutItem.innerHTML = `<a href="#" class="navbar-link" onclick="cerrarSesion()">Salir</a>`;
+                navbarMenu.appendChild(logoutItem);
+            }
+        });
+        
+        async function cerrarSesion() {
+            const confirmar = await showConfirm('¿Desea cerrar la sesión?', 'Cerrar Sesión', {
+                confirmText: 'Sí, cerrar',
+                cancelText: 'Cancelar',
+                confirmClass: 'danger'
+            });
+            
+            if (confirmar) {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('user_data');
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

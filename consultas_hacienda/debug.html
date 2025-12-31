@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Gestión de Usuarios</title>
+</head>
+<body>
+    <h1>Debug - Gestión de Usuarios</h1>
+
+    <h2>Información del Usuario</h2>
+    <pre id="userInfo">Cargando...</pre>
+
+    <h2>Prueba de API</h2>
+    <button onclick="testAPI()">Probar API</button>
+    <pre id="apiResult"></pre>
+
+    <h2>Estado de la Pestaña</h2>
+    <pre id="tabInfo"></pre>
+
+    <script>
+        // Verificar información del usuario al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            checkUserInfo();
+            checkTabStatus();
+        });
+
+        function checkUserInfo() {
+            const userData = localStorage.getItem('user_data');
+            const authToken = localStorage.getItem('auth_token');
+
+            document.getElementById('userInfo').textContent = JSON.stringify({
+                userData: userData ? JSON.parse(userData) : null,
+                authToken: authToken ? authToken.substring(0, 20) + '...' : null,
+                currentURL: window.location.href
+            }, null, 2);
+        }
+
+        async function testAPI() {
+            const userData = localStorage.getItem('user_data');
+            if (!userData) {
+                document.getElementById('apiResult').textContent = 'No hay datos de usuario';
+                return;
+            }
+
+            const user = JSON.parse(userData);
+            const username = user.username;
+
+            try {
+                const response = await fetch(`api_auth.php?action=list_users_dependencia&user=${username}`);
+                const result = await response.json();
+                document.getElementById('apiResult').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('apiResult').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        function checkTabStatus() {
+            // Simular la lógica de configurarPestanasPorRol
+            const userData = localStorage.getItem('user_data');
+            if (!userData) {
+                document.getElementById('tabInfo').textContent = 'No hay datos de usuario';
+                return;
+            }
+
+            const user = JSON.parse(userData);
+            const rol = user.rol;
+
+            const tabVisible = rol === 'admin_dependencia';
+
+            document.getElementById('tabInfo').textContent = JSON.stringify({
+                rol: rol,
+                tabVisible: tabVisible,
+                expectedRol: 'admin_dependencia',
+                match: rol === 'admin_dependencia'
+            }, null, 2);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+    "fecha": "2025-12-30 00:13:55",
+    "resultados_exitosos": [
+        "Conexión a base de datos: OK",
+        "Tabla actos_administrativos: OK",
+        "Tabla usuarios: OK",
+        "Tabla auditoria_cargas: OK",
+        "Tabla cargas_masivas: OK",
+        "Tabla cargas_errores: OK",
+        "Tabla dependencias: OK",
+        "Roles de usuario: OK",
+        "Usuarios de prueba: OK",
+        "Datos de actos administrativos: OK",
+        "Catálogo de dependencias: OK",
+        "Sistema de auditoría: OK",
+        "Autenticación de prueba: OK"
+    ],
+    "errores": [],
+    "total_exitosos": 13,
+    "total_errores": 0
+}
